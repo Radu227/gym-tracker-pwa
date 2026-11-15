@@ -24,7 +24,13 @@ export class NotificationService {
       return;
     }
 
-    this.isEnabled.set(Notification.permission === 'granted');
+    try {
+      const registration = await this.getServiceWorkerRegistration();
+      const subscription = await registration.pushManager.getSubscription();
+      this.isEnabled.set(subscription !== null);
+    } catch {
+      this.isEnabled.set(false);
+    }
     await this.checkInactivity();
   }
 

@@ -1,0 +1,65 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Istoric</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="history-content">
+  <main class="history-panel">
+    @if (errorMessage) {
+    <ion-note color="danger" class="notice" role="alert">{{ errorMessage }}</ion-note>
+    } @if (isLoading) {
+    <div class="state-message">Se încarcă istoricul…</div>
+    } @else if (exercises.length === 0) {
+    <div class="state-message">Nu ai încă exerciții înregistrate.</div>
+    } @else {
+    <ion-card class="history-card">
+      <ion-card-header>
+        <ion-card-title>Selectează exercițiul</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item class="select-field">
+          <ion-label>Exercițiu</ion-label>
+          <ion-select [(ngModel)]="selectedExerciseId" (ionChange)="onExerciseChanged()">
+            @for (exercise of exercises; track exercise.id) {
+            <ion-select-option [value]="exercise.id">
+              {{ exercise.primary_muscle_group }} · {{ exercise.name }}
+            </ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    @if (isLoadingHistory) {
+    <div class="state-message">Se încarcă modificările…</div>
+    } @else if (history.length === 0) {
+    <div class="state-message">Nu există modificări pentru acest exercițiu.</div>
+    } @else {
+    <ion-list class="history-list">
+      @for (entry of history; track entry.id) {
+      <ion-card class="history-entry">
+        <ion-card-content>
+          <div class="entry-heading">
+            <strong>Seria {{ entry.set_number }}</strong>
+            <span>{{ formatDate(entry.created_at) }}</span>
+          </div>
+          <p>{{ entry.weight_kg }} kg × {{ entry.reps }} repetări</p>
+          @if (entry.is_failure) {
+          <p class="failure-label">Până la epuizare</p>
+          } @if (entry.notes) {
+          <p class="entry-note">{{ entry.notes }}</p>
+          }
+          <small class="event-label"
+            >{{ entry.event_type === 'recorded' ? 'Serie adăugată' : 'Modificare salvată' }}</small
+          >
+        </ion-card-content>
+      </ion-card>
+      }
+    </ion-list>
+    } }
+  </main>
+</ion-content>

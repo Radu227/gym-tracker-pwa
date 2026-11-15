@@ -1,0 +1,139 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Grafice</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="graphs-content">
+  <main class="graphs-panel">
+    @if (errorMessage) {
+    <ion-note color="danger" class="notice" role="alert">{{ errorMessage }}</ion-note>
+    } @if (isLoading) {
+    <div class="state-message">Se pregătesc graficele…</div>
+    } @else {
+    <ion-card class="chart-card">
+      <ion-card-header class="chart-header">
+        <ion-card-title>Volum săptămânal</ion-card-title>
+        <ion-button fill="clear" size="small" (click)="openInfo('weekly')">Detalii</ion-button>
+      </ion-card-header>
+      <ion-card-content>
+        @if (hasWeeklyData) {
+        <div class="chart-container">
+          <canvas baseChart [data]="weeklyData" [options]="barOptions" type="bar"></canvas>
+        </div>
+        } @else {
+        <div class="empty-chart">Nu există serii suficiente pentru volumul săptămânal.</div>
+        }
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="chart-card">
+      <ion-card-header class="chart-header">
+        <ion-card-title>Volum lunar</ion-card-title>
+        <ion-button fill="clear" size="small" (click)="openInfo('monthly')">Detalii</ion-button>
+      </ion-card-header>
+      <ion-card-content>
+        @if (hasMonthlyData) {
+        <div class="chart-container">
+          <canvas baseChart [data]="monthlyData" [options]="barOptions" type="bar"></canvas>
+        </div>
+        } @else {
+        <div class="empty-chart">Nu există serii suficiente pentru volumul lunar.</div>
+        }
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="chart-card">
+      <ion-card-header class="chart-header">
+        <ion-card-title>Evoluția forței</ion-card-title>
+        <ion-button fill="clear" size="small" (click)="openInfo('strength')">Detalii</ion-button>
+      </ion-card-header>
+      <ion-card-content>
+        @if (exercises.length > 0) {
+        <ion-item class="selector-item">
+          <ion-select
+            label="Exercițiu"
+            label-placement="stacked"
+            [(ngModel)]="selectedExerciseId"
+            (ionChange)="onExerciseChanged()"
+          >
+            @for (exercise of exercises; track exercise.id) {
+            <ion-select-option [value]="exercise.id">{{ exercise.name }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+        <ion-segment [(ngModel)]="forceMetric" (ionChange)="onMetricChanged()">
+          <ion-segment-button value="weight"><ion-label>Greutate maximă</ion-label></ion-segment-button>
+          <ion-segment-button value="oneRm"><ion-label>1RM estimat</ion-label></ion-segment-button>
+        </ion-segment>
+        @if (hasStrengthData) {
+        <div class="chart-container">
+          <canvas baseChart [data]="strengthData" [options]="lineOptions" type="line"></canvas>
+        </div>
+        } @else {
+        <div class="empty-chart">Nu există date pentru exercițiul selectat.</div>
+        } } @else {
+        <div class="empty-chart">Adaugă o serie pentru a vedea evoluția forței.</div>
+        }
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="chart-card">
+      <ion-card-header class="chart-header">
+        <ion-card-title>Distribuția volumului pe grupe musculare</ion-card-title>
+        <ion-button fill="clear" size="small" (click)="openInfo('muscles')">Detalii</ion-button>
+      </ion-card-header>
+      <ion-card-content>
+        @if (hasMuscleData) {
+        <div class="doughnut-container">
+          <canvas baseChart [data]="muscleData" [options]="doughnutOptions" type="doughnut"></canvas>
+        </div>
+        } @else {
+        <div class="empty-chart">Nu există antrenamente în ultimele 30 de zile.</div>
+        }
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="chart-card">
+      <ion-card-header>
+        <ion-card-title>Forță relativă &amp; nivel atletic</ion-card-title>
+        <ion-button fill="clear" size="small" (click)="openInfo('relative')">Detalii</ion-button>
+        @if (profileAnalysisAvailable) {
+        <ion-note>BMI: {{ bmi | number: '1.1-1' }} · TDEE: {{ tdee }} kcal/zi</ion-note>
+        }
+      </ion-card-header>
+      <ion-card-content>
+        @if (!profileAnalysisAvailable) {
+        <div class="empty-chart">
+          Completează-ți greutatea și înălțimea în Profil pentru a debloca analiza forței relative.
+          <ion-button expand="block" fill="outline" (click)="openProfile()">Completează Profilul</ion-button>
+        </div>
+        } @else if (hasRelativeData) {
+        <div class="chart-container relative-chart">
+          <canvas baseChart [data]="relativeData" [options]="relativeOptions" type="bar"></canvas>
+        </div>
+        } @else {
+        <div class="empty-chart">Adaugă serii pentru a calcula forța relativă.</div>
+        }
+      </ion-card-content>
+    </ion-card>
+    }
+  </main>
+</ion-content>
+<ion-modal [isOpen]="infoKey !== null" (didDismiss)="closeInfo()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>{{ infoTitle }}</ion-title>
+        <ion-button slot="end" fill="clear" (click)="closeInfo()">Închide</ion-button>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="info-modal-content">
+      <p>{{ infoDescription }}</p>
+    </ion-content>
+  </ng-template>
+</ion-modal>
+<app-tabs></app-tabs>

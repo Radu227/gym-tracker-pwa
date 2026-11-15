@@ -1,0 +1,7 @@
+.app-tab-bar {
+  --background: rgba(15, 17, 22, 0.9);
+  --color: var(--app-disabled);
+  --color-selected: var(--app-accent);
+  border-top: 1px solid var(--app-border);
+  backdrop-filter: blur(16px);
+}

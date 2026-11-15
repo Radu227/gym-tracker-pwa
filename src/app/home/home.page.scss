@@ -1,0 +1,132 @@
+.home-content {
+  --background: var(--app-bg);
+}
+
+.home-panel {
+  box-sizing: border-box;
+  width: min(100% - 32px, 720px);
+  margin: 24px auto 40px;
+}
+
+.welcome-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+  padding: 16px;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-card);
+  background: linear-gradient(135deg, var(--app-surface), rgba(245, 158, 11, 0.08));
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+}
+
+.profile-avatar {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--app-accent);
+  color: var(--ion-color-primary-contrast);
+}
+
+.profile-avatar.female {
+  background: var(--app-success);
+  color: #04130e;
+}
+
+.profile-avatar::before {
+  position: absolute;
+  top: 9px;
+  left: 50%;
+  width: 15px;
+  height: 15px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: currentColor;
+  content: '';
+}
+
+.profile-avatar::after {
+  position: absolute;
+  bottom: 7px;
+  left: 50%;
+  width: 29px;
+  height: 21px;
+  transform: translateX(-50%);
+  border-radius: 16px 16px 7px 7px;
+  background: currentColor;
+  content: '';
+}
+
+.profile-avatar.female::before {
+  box-shadow: 0 -3px 0 3px currentColor;
+}
+
+.welcome-card p {
+  margin: 4px 0 0;
+  color: var(--app-muted);
+}
+
+.page-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(1.7rem, 8vw, 2.2rem);
+}
+
+.notice {
+  display: block;
+  margin: 12px 0;
+}
+
+.create-card,
+.today-card,
+.routine-card {
+  margin: 0 0 16px;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-card);
+  background: var(--app-surface);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.14);
+}
+
+.today-card {
+  border-color: color-mix(in srgb, var(--ion-color-primary) 45%, var(--app-border));
+}
+
+.today-card p {
+  margin-top: 0;
+  color: var(--app-muted);
+}
+
+.create-card ion-card-title {
+  font-size: 1.05rem;
+}
+
+.form-field {
+  --background: var(--app-surface-secondary);
+  --border-color: var(--app-border);
+  --border-radius: var(--app-radius-control);
+  margin-bottom: 12px;
+}
+
+.state-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 48px 20px;
+  color: var(--app-muted);
+  text-align: center;
+}
+
+.routine-list {
+  padding: 0;
+  background: transparent;
+}
+

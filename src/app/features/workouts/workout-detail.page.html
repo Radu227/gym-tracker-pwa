@@ -1,0 +1,101 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ routine?.name ?? 'Antrenament' }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="detail-content">
+  <main class="detail-panel">
+    @if (errorMessage) {
+    <ion-note color="danger" class="notice" role="alert">{{ errorMessage }}</ion-note>
+    }
+
+    <ion-card class="add-card">
+      <ion-card-header>
+        <ion-card-title>Adaugă grupă musculară</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item class="form-field">
+          <ion-input
+            [(ngModel)]="groupName"
+            label="Nume grupă"
+            label-placement="stacked"
+            placeholder="Ex: Piept, Spate, Picioare"
+            maxlength="80"
+          ></ion-input>
+        </ion-item>
+        <ion-button expand="block" [disabled]="isAddingGroup || !groupName.trim()" (click)="addGroup()">
+          {{ isAddingGroup ? 'Se salvează…' : 'Adaugă grupa' }}
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    @if (isLoading) {
+    <div class="state-message">Se încarcă detaliile…</div>
+    } @else if (groups.length === 0) {
+    <div class="state-message">
+      <strong>Încă nu ai grupe musculare</strong>
+      <span>Adaugă prima grupă pentru a începe să construiești antrenamentul.</span>
+    </div>
+    } @else {
+    <ion-list class="group-list">
+      @for (group of groups; track group.id) {
+      <ion-card class="group-card">
+        <ion-card-header>
+          <div class="group-heading">
+            <ion-card-title>{{ group.name }}</ion-card-title>
+            <span class="muscle-pill">{{ group.name }}</span>
+          </div>
+          @if (group.isPending) {
+          <small class="sync-label">Se sincronizează…</small>
+          }
+        </ion-card-header>
+        <ion-card-content>
+          @if (group.exercises.length === 0) {
+          <p class="empty-group">Adaugă primul exercițiu pentru această grupă.</p>
+          } @else {
+          <ul class="exercise-list">
+            @for (item of group.exercises; track item.id) {
+            <li>
+              <button
+                type="button"
+                class="exercise-link"
+                [disabled]="item.id.startsWith('local-exercise-')"
+                (click)="openExercise(item)"
+              >
+                {{ item.exercise.name }}
+              </button>
+              @if (item.id.startsWith('local-exercise-')) {
+              <small class="sync-label">Se sincronizează…</small>
+              }
+            </li>
+            }
+          </ul>
+          }
+
+          <ion-item class="form-field">
+            <ion-input
+              [(ngModel)]="group.exerciseName"
+              label="Exercițiu nou"
+              label-placement="stacked"
+              placeholder="Ex: Împins la bancă"
+              maxlength="120"
+            ></ion-input>
+          </ion-item>
+          <ion-button
+            fill="outline"
+            [disabled]="group.isPending || group.isAddingExercise || !group.exerciseName.trim()"
+            (click)="addExercise(group)"
+          >
+            {{ group.isAddingExercise ? 'Se salvează…' : 'Adaugă exercițiul' }}
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+      }
+    </ion-list>
+    }
+  </main>
+</ion-content>

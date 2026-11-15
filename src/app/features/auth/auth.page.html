@@ -1,0 +1,60 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Gym Tracker</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="auth-content">
+  <main class="auth-panel">
+    <p class="eyebrow">ANTRENAMENT. PROGRES. CONSECVENȚĂ.</p>
+    <h1>{{ isSignUp ? 'Creează-ți contul' : 'Bine ai revenit' }}</h1>
+    <p class="intro">Păstrează-ți antrenamentele și progresul într-un singur loc.</p>
+
+    @if (!isSupabaseConfigured) {
+    <ion-note color="warning" class="notice" role="status">
+      Conectarea la Supabase nu este configurată. Completează valorile din fișierul local .env.local și repornește
+      aplicația.
+    </ion-note>
+    } @else {
+    <form (ngSubmit)="submit()">
+      <ion-item class="auth-field">
+        <ion-input
+          [(ngModel)]="email"
+          autocomplete="email"
+          label="Email"
+          label-placement="stacked"
+          name="email"
+          required
+          type="email"
+        ></ion-input>
+      </ion-item>
+
+      <ion-item class="auth-field">
+        <ion-input
+          [(ngModel)]="password"
+          [autocomplete]="isSignUp ? 'new-password' : 'current-password'"
+          label="Parolă"
+          label-placement="stacked"
+          name="password"
+          required
+          type="password"
+        ></ion-input>
+      </ion-item>
+
+      @if (errorMessage) {
+      <ion-note color="danger" class="notice" role="alert">{{ errorMessage }}</ion-note>
+      } @if (infoMessage) {
+      <ion-note color="success" class="notice" role="status">{{ infoMessage }}</ion-note>
+      }
+
+      <ion-button expand="block" type="submit" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Se procesează…' : isSignUp ? 'Creează cont' : 'Autentificare' }}
+      </ion-button>
+    </form>
+
+    <button class="mode-toggle" type="button" (click)="toggleMode()">
+      {{ isSignUp ? 'Ai deja cont? Autentifică-te' : 'Nu ai cont? Creează unul' }}
+    </button>
+    }
+  </main>
+</ion-content>

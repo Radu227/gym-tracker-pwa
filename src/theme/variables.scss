@@ -1,0 +1,56 @@
+/* Ionic global theme tokens for a dark-first fitness PWA. */
+:root {
+  color-scheme: dark;
+
+  --ion-color-primary: #f59e0b;
+  --ion-color-primary-rgb: 245, 158, 11;
+  --ion-color-primary-contrast: #0a0b0e;
+  --ion-color-primary-contrast-rgb: 10, 11, 14;
+  --ion-color-primary-shade: #d8870a;
+  --ion-color-primary-tint: #f6aa2b;
+
+  --ion-color-success: #10b981;
+  --ion-color-success-rgb: 16, 185, 129;
+  --ion-color-success-contrast: #04130e;
+  --ion-color-success-shade: #0e9f70;
+  --ion-color-success-tint: #2abb91;
+
+  --ion-color-warning: #eab308;
+  --ion-color-warning-rgb: 234, 179, 8;
+  --ion-color-warning-contrast: #171303;
+  --ion-color-warning-shade: #ce9e07;
+  --ion-color-warning-tint: #edbc21;
+
+  --ion-color-danger: #ef4444;
+  --ion-color-danger-rgb: 239, 68, 68;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-shade: #d23c3c;
+  --ion-color-danger-tint: #f15858;
+
+  --ion-background-color: #0a0b0e;
+  --ion-background-color-rgb: 10, 11, 14;
+  --ion-text-color: #f8fafc;
+  --ion-text-color-rgb: 248, 250, 252;
+  --ion-card-background: #14161c;
+  --ion-item-background: #1c1f28;
+  --ion-toolbar-background: rgba(10, 11, 14, 0.78);
+  --ion-tab-bar-background: #0f1116;
+  --ion-tab-bar-color: #64748b;
+  --ion-tab-bar-color-selected: #f59e0b;
+  --ion-border-color: #232732;
+
+  --app-bg: #0a0b0e;
+  --app-surface: #14161c;
+  --app-surface-secondary: #1c1f28;
+  --app-border: #232732;
+  --app-accent: #f59e0b;
+  --app-accent-hover: #d97706;
+  --app-accent-glow: rgba(245, 158, 11, 0.14);
+  --app-success: #10b981;
+  --app-pr: #eab308;
+  --app-failure: #ef4444;
+  --app-muted: #94a3b8;
+  --app-disabled: #64748b;
+  --app-radius-card: 16px;
+  --app-radius-control: 14px;
+}

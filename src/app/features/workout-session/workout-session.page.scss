@@ -1,0 +1,80 @@
+.session-content {
+  --background: var(--app-bg);
+}
+
+.session-panel {
+  box-sizing: border-box;
+  width: min(100% - 32px, 720px);
+  margin: 24px auto 40px;
+}
+
+.notice {
+  display: block;
+  margin-bottom: 16px;
+}
+
+.session-card,
+.prefill-note {
+  color: var(--app-muted);
+}
+
+.set-row {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 12px;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-control);
+  background: var(--app-surface-secondary);
+}
+
+.set-label {
+  display: grid;
+  grid-template-columns: 28px auto;
+  align-items: center;
+  justify-content: start;
+  gap: 8px;
+  width: max-content;
+  min-height: 28px;
+  color: var(--ion-text-color);
+  white-space: nowrap;
+}
+
+.set-index {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  border-radius: 50%;
+  background: var(--app-accent-glow);
+  color: var(--app-accent);
+  font-size: 0.78rem;
+  line-height: 1;
+}
+
+.set-row.completed {
+  border-color: var(--ion-color-success);
+}
+
+.number-field,
+.notes-field {
+  --background: var(--app-surface-secondary);
+  --border-color: var(--app-border);
+  --border-radius: var(--app-radius-control);
+}
+
+.number-field ion-input {
+  text-align: center;
+  font-weight: 800;
+}
+
+.failure-field {
+  --background: transparent;
+}
+
+.state-message {
+  padding: 48px 20px;
+  color: var(--app-muted);
+  text-align: center;
+}

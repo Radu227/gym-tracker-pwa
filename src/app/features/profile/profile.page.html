@@ -1,0 +1,100 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Profil</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="profile-content">
+  <main class="profile-panel">
+    @if (errorMessage) {
+    <ion-note color="danger" class="notice" role="alert">{{ errorMessage }}</ion-note>
+    } @if (message) {
+    <ion-note color="success" class="notice">{{ message }}</ion-note>
+    } @if (isLoading) {
+    <div class="state-message">Se încarcă profilul…</div>
+    } @else {
+    <ion-card class="profile-card">
+      <ion-card-header><ion-card-title>Date personale</ion-card-title></ion-card-header>
+      <ion-card-content>
+        <ion-item class="form-field"
+          ><ion-input label="Prenume" label-placement="stacked" [(ngModel)]="firstName"></ion-input
+        ></ion-item>
+        <ion-item class="form-field"
+          ><ion-input label="Nume" label-placement="stacked" [(ngModel)]="lastName"></ion-input
+        ></ion-item>
+        <ion-item class="form-field">
+          <ion-label>Sex</ion-label>
+          <ion-select [(ngModel)]="avatarStyle">
+            <ion-select-option value="male">Masculin</ion-select-option>
+            <ion-select-option value="female">Feminin</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item class="form-field"
+          ><ion-input type="number" label="Vârstă" label-placement="stacked" [(ngModel)]="age"></ion-input
+        ></ion-item>
+        <ion-item class="form-field"
+          ><ion-input type="number" label="Greutate (kg)" label-placement="stacked" [(ngModel)]="weightKg"></ion-input
+        ></ion-item>
+        <ion-item class="form-field"
+          ><ion-input type="number" label="Înălțime (cm)" label-placement="stacked" [(ngModel)]="heightCm"></ion-input
+        ></ion-item>
+        <ion-item class="form-field"
+          ><ion-input label="Email" label-placement="stacked" [value]="email" readonly></ion-input
+        ></ion-item>
+        <ion-button expand="block" [disabled]="isSaving" (click)="saveProfile()"
+          >{{ isSaving ? 'Se salvează…' : 'Salvează profilul' }}</ion-button
+        >
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="profile-card">
+      <ion-card-header><ion-card-title>Notificări</ion-card-title></ion-card-header>
+      <ion-card-content>
+        <p>Primești un reminder dacă nu ai avut nicio activitate timp de 3 zile.</p>
+        @if (!notifications.isSupported()) {
+        <ion-note color="warning">Browserul nu suportă notificări Web Push.</ion-note>
+        } @else if (notifications.isEnabled()) {
+        <ion-note color="success">Notificările sunt active.</ion-note>
+        <ion-button expand="block" fill="outline" (click)="disableNotifications()"
+          >Dezactivează notificările</ion-button
+        >
+        } @else {
+        <ion-button expand="block" (click)="enableNotifications()">Activează notificările</ion-button>
+        }
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="profile-card">
+      <ion-card-header><ion-card-title>Schimbă parola</ion-card-title></ion-card-header>
+      <ion-card-content>
+        <ion-item class="form-field"
+          ><ion-input
+            type="password"
+            label="Parola curentă"
+            label-placement="stacked"
+            [(ngModel)]="currentPassword"
+          ></ion-input
+        ></ion-item>
+        <ion-item class="form-field"
+          ><ion-input
+            type="password"
+            label="Parola nouă"
+            label-placement="stacked"
+            [(ngModel)]="newPassword"
+          ></ion-input
+        ></ion-item>
+        <ion-button
+          expand="block"
+          [disabled]="isChangingPassword || !currentPassword || !newPassword"
+          (click)="changePassword()"
+        >
+          {{ isChangingPassword ? 'Se schimbă…' : 'Schimbă parola' }}
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+    }
+  </main>
+</ion-content>

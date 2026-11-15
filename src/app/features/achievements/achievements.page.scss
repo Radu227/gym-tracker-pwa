@@ -1,0 +1,124 @@
+.achievements-content {
+  --background: var(--app-bg);
+}
+
+.achievements-panel {
+  box-sizing: border-box;
+  width: min(100% - 32px, 720px);
+  margin: 24px auto 40px;
+}
+
+.achievement-card {
+  margin: 0 0 16px;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-card);
+  background: var(--app-surface);
+  box-shadow: none;
+  transition:
+    transform 160ms ease,
+    opacity 160ms ease;
+}
+
+.achievement-card.locked {
+  opacity: 0.62;
+}
+
+.achievement-card.unlocked {
+  border-color: color-mix(in srgb, var(--app-accent) 60%, var(--app-border));
+  box-shadow: 0 0 24px rgba(245, 158, 11, 0.1);
+}
+
+.achievement-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.achievement-heading ion-card-title {
+  flex: 1;
+}
+
+.achievement-mark {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid var(--app-border);
+  border-radius: 50%;
+  color: var(--app-muted);
+  font-size: 1rem;
+}
+
+.unlocked .achievement-mark {
+  border-color: var(--app-accent);
+  color: var(--app-accent);
+}
+
+.status-pill {
+  padding: 4px 8px;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  border-radius: 999px;
+  color: var(--app-success);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.achievement-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+  padding: 16px;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-card);
+  background: linear-gradient(135deg, var(--app-surface), rgba(245, 158, 11, 0.08));
+}
+
+.summary-label {
+  color: var(--app-accent);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.achievement-summary strong {
+  color: var(--ion-text-color);
+  font-size: 1.05rem;
+}
+
+.achievement-summary span {
+  color: var(--app-muted);
+  font-size: 0.9rem;
+}
+
+.achievement-card p {
+  color: var(--app-muted);
+}
+
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  color: var(--app-muted);
+  font-size: 0.85rem;
+}
+
+.progress-label strong {
+  color: var(--ion-color-primary);
+}
+
+.achievement-card.unlocked .progress-label strong {
+  color: var(--app-success);
+}
+
+.notice {
+  display: block;
+  margin-bottom: 16px;
+}
+
+.state-message {
+  padding: 48px 20px;
+  color: var(--app-muted);
+  text-align: center;
+}

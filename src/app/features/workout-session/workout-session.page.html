@@ -1,0 +1,78 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button [defaultHref]="'/workouts/' + session?.routine_id"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ exercise?.name ?? 'Exercițiu' }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="session-content">
+  <main class="session-panel">
+    @if (errorMessage) {
+    <ion-note color="danger" class="notice" role="alert">{{ errorMessage }}</ion-note>
+    } @if (isLoading) {
+    <div class="state-message">Se pregătește exercițiul…</div>
+    } @else if (session && exercise) {
+    <ion-card class="session-card">
+      <ion-card-header>
+        <ion-card-title>Seriile tale</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p class="prefill-note">
+          Seriile salvate rămân în istoric. Modificările adaugă o versiune nouă fără să șteargă valorile vechi.
+        </p>
+
+        <ion-button expand="block" fill="outline" [disabled]="!!newSet" (click)="addSet()"> Adaugă serie </ion-button>
+
+        @if (newSet) {
+        <div class="set-row new-set-row">
+          <strong class="set-label"
+            ><span class="set-index">{{ newSet.setNumber }}</span>Seria {{ newSet.setNumber }} nouă</strong
+          >
+          <ion-item class="number-field">
+            <ion-input type="number" label="Kg" label-placement="stacked" [(ngModel)]="newSet.weightKg"></ion-input>
+          </ion-item>
+          <ion-item class="number-field">
+            <ion-input type="number" label="Repetări" label-placement="stacked" [(ngModel)]="newSet.reps"></ion-input>
+          </ion-item>
+          <ion-item class="failure-field">
+            <ion-toggle [(ngModel)]="newSet.isFailure">Failure</ion-toggle>
+          </ion-item>
+          <ion-item class="notes-field">
+            <ion-input [(ngModel)]="newSet.notes" label="Notiță" label-placement="stacked"></ion-input>
+          </ion-item>
+          <ion-button expand="block" (click)="saveNewSet()">
+            {{ newSet.saving ? 'Se salvează…' : 'Salvează seria' }}
+          </ion-button>
+          <ion-button fill="clear" (click)="cancelNewSet()">Anulează</ion-button>
+        </div>
+        } @for (set of sets; track set.source?.workout_set_id ?? set.setNumber) {
+        <div class="set-row saved-set-row">
+          <strong class="set-label"><span class="set-index">{{ set.setNumber }}</span>Seria {{ set.setNumber }}</strong>
+          <p class="set-description">
+            {{ set.weightKg }} kg × {{ set.reps }} repetări @if (set.isFailure) { · Failure } @if (set.notes) { · {{
+            set.notes }} }
+          </p>
+          <ion-item class="number-field">
+            <ion-input type="number" label="Kg" label-placement="stacked" [(ngModel)]="set.weightKg"></ion-input>
+          </ion-item>
+          <ion-item class="number-field">
+            <ion-input type="number" label="Repetări" label-placement="stacked" [(ngModel)]="set.reps"></ion-input>
+          </ion-item>
+          <ion-item class="failure-field">
+            <ion-toggle [(ngModel)]="set.isFailure">Failure</ion-toggle>
+          </ion-item>
+          <ion-item class="notes-field">
+            <ion-input [(ngModel)]="set.notes" label="Notiță" label-placement="stacked"></ion-input>
+          </ion-item>
+          <ion-button expand="block" [disabled]="!set.source || !isDirty(set) || set.saving" (click)="saveChanges(set)">
+            {{ set.saving ? 'Se salvează…' : 'Salvează modificări' }}
+          </ion-button>
+        </div>
+        }
+      </ion-card-content>
+    </ion-card>
+    }
+  </main>
+</ion-content>

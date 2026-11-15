@@ -1,0 +1,53 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Achievements</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="achievements-content">
+  <main class="achievements-panel">
+    @if (errorMessage) {
+    <ion-note color="danger" class="notice" role="alert">{{ errorMessage }}</ion-note>
+    } @if (isLoading) {
+    <div class="state-message">Se încarcă achievements…</div>
+    } @else if (achievements.length === 0) {
+    <div class="state-message">Nu există achievements active momentan.</div>
+    } @else {
+    <section class="achievement-summary" aria-live="polite">
+      <span class="summary-label">PROGRESUL TĂU</span>
+      <strong>Ai deblocat {{ unlockedCount }} / {{ achievements.length }} achievements</strong>
+      <span>Continuă să înregistrezi progresul pentru următorul obiectiv.</span>
+    </section>
+    @for (achievement of achievements; track achievement.code) {
+    <ion-card
+      class="achievement-card"
+      [class.unlocked]="achievement.unlockedAt"
+      [class.locked]="!achievement.unlockedAt"
+    >
+      <ion-card-header>
+        <div class="achievement-heading">
+          <div class="achievement-mark">★</div>
+          <ion-card-title>{{ achievement.title }}</ion-card-title>
+          @if (achievement.unlockedAt) {
+          <span class="status-pill">DEBLOCAT</span>
+          }
+        </div>
+      </ion-card-header>
+      <ion-card-content>
+        <p>{{ achievement.description }}</p>
+        <ion-progress-bar [value]="progressValue(achievement)"></ion-progress-bar>
+        <div class="progress-label">
+          <span>{{ achievement.progress }} / {{ achievement.target }}</span>
+          @if (!achievement.unlockedAt) {
+          <strong>În progres</strong>
+          }
+        </div>
+      </ion-card-content>
+    </ion-card>
+    } }
+  </main>
+</ion-content>
+<app-tabs></app-tabs>

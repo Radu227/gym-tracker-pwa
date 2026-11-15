@@ -1,0 +1,87 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Progres</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="progress-content">
+  <main class="progress-panel">
+    @if (errorMessage) {
+    <ion-note color="danger" class="notice" role="alert">{{ errorMessage }}</ion-note>
+    } @if (statistics) {
+    <section class="statistics-grid" aria-label="Statistici rapide">
+      <ion-card class="stat-card">
+        <ion-card-content>
+          <strong>{{ statistics.totalVolume | number: '1.0-0' }} kg</strong>
+          <span>Volum total</span>
+        </ion-card-content>
+      </ion-card>
+      <ion-card class="stat-card">
+        <ion-card-content>
+          <strong>{{ statistics.monthlyWorkouts }}</strong>
+          <span>Zile active luna aceasta</span>
+        </ion-card-content>
+      </ion-card>
+      <ion-card class="stat-card">
+        <ion-card-content>
+          <strong>{{ statistics.currentStreak }}</strong>
+          <span>Streak curent</span>
+        </ion-card-content>
+      </ion-card>
+      <ion-card class="stat-card">
+        <ion-card-content>
+          <strong>{{ statistics.progressingExercises }}</strong>
+          <span>Exerciții cu progres în 7 zile</span>
+        </ion-card-content>
+      </ion-card>
+    </section>
+    }
+
+    <ion-card class="calendar-card">
+      <ion-card-content>
+        <div class="calendar-heading">
+          <ion-button fill="clear" aria-label="Luna anterioară" (click)="previousMonth()">
+            <ion-icon slot="icon-only" name="chevron-back"></ion-icon>
+          </ion-button>
+          <strong>{{ monthLabel }}</strong>
+          <ion-button fill="clear" aria-label="Luna următoare" (click)="nextMonth()">
+            <ion-icon slot="icon-only" name="chevron-forward"></ion-icon>
+          </ion-button>
+        </div>
+        <div class="weekdays" aria-hidden="true">
+          @for (weekday of ['L', 'Ma', 'Mi', 'J', 'V', 'S', 'D']; track weekday) {
+          <span>{{ weekday }}</span>
+          }
+        </div>
+        @if (isLoading) {
+        <div class="state-message">Se încarcă zilele de antrenament…</div>
+        } @else {
+        <div class="calendar-grid" aria-label="Calendarul antrenamentelor">
+          @for (day of calendarDays; track day.key) {
+          <div
+            class="calendar-day"
+            [class.outside-month]="!day.isCurrentMonth"
+            [class.today]="day.isToday"
+            [class.workout-day]="day.hasWorkout"
+            [attr.aria-label]="day.day + (day.hasWorkout ? ', antrenament înregistrat' : '')"
+          >
+            <span>{{ day.day }}</span>
+            @if (day.hasWorkout && day.isToday) {
+            <i aria-hidden="true"></i>
+            }
+          </div>
+          }
+        </div>
+        }
+        <div class="calendar-legend">
+          <span><i class="legend-dot workout"></i> Antrenament înregistrat</span>
+          <span><i class="legend-dot today"></i> Azi</span>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </main>
+</ion-content>
+<app-tabs></app-tabs>

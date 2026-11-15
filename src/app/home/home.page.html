@@ -1,0 +1,100 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Gym Tracker</ion-title>
+    <ion-button slot="end" fill="clear" (click)="signOut()">Ieșire</ion-button>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="home-content">
+  <main class="home-panel">
+    <ion-card class="welcome-card" button aria-label="Profilul utilizatorului" (click)="openProfile()">
+      <div
+        class="profile-avatar"
+        [class.female]="profile?.avatar_style === 'female'"
+        [attr.aria-label]="profile?.avatar_style === 'female' ? 'Siluetă feminină' : 'Siluetă masculină'"
+      ></div>
+      <div>
+        <strong>{{ displayName }}</strong>
+        <p>{{ encouragementMessage }}</p>
+      </div>
+    </ion-card>
+    <section class="page-heading">
+      <div>
+        <h1>Antrenamentele tale</h1>
+      </div>
+      @if (sync.state() === 'syncing') {
+      <ion-note color="primary"><ion-spinner name="dots"></ion-spinner> Sincronizare</ion-note>
+      } @else if (sync.state() === 'offline') {
+      <ion-note color="warning">Offline</ion-note>
+      } @else if (sync.pendingCount() > 0) {
+      <ion-note color="warning">{{ sync.pendingCount() }} în așteptare</ion-note>
+      }
+    </section>
+    @if (errorMessage) {
+    <ion-note color="danger" class="notice" role="alert">{{ errorMessage }}</ion-note>
+    } @if (!isCheckingToday && !hasWorkoutToday) {
+    <ion-card class="today-card">
+      <ion-card-header>
+        <ion-card-title>Ai tras azi de fiare?</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>Un antrenament înregistrat astăzi îți păstrează calendarul și progresul la zi.</p>
+        <ion-button expand="block" (click)="startTodayWorkout()"> Da, azi am fost la sală </ion-button>
+        <ion-button fill="clear" expand="block" (click)="openProgress()">Nu, azi doar urmăresc progresul</ion-button>
+      </ion-card-content>
+    </ion-card>
+    }
+
+    <ion-card class="create-card">
+      <ion-card-header>
+        <ion-card-title>Adaugă antrenament</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item class="form-field">
+          <ion-input
+            [(ngModel)]="routineName"
+            label="Nume"
+            label-placement="stacked"
+            placeholder="Ex: Push, Pull, Legs"
+            maxlength="100"
+          ></ion-input>
+        </ion-item>
+        <ion-item class="form-field">
+          <ion-input
+            [(ngModel)]="routineNotes"
+            label="Notițe (opțional)"
+            label-placement="stacked"
+            placeholder="Ex: accent pe progresie"
+            maxlength="2000"
+          ></ion-input>
+        </ion-item>
+        <ion-button expand="block" [disabled]="isCreating || !routineName.trim()" (click)="createRoutine()">
+          {{ isCreating ? 'Se salvează…' : 'Adaugă antrenamentul' }}
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    @if (isLoading) {
+    <div class="state-message"><ion-spinner></ion-spinner><span>Se încarcă rutinele…</span></div>
+    } @else if (routines.length === 0) {
+    <div class="state-message">
+      <strong>Începe cu un antrenament</strong>
+      <span>Antrenamentele tale vor apărea aici după ce creezi primul.</span>
+    </div>
+    } @else {
+    <ion-list class="routine-list">
+      @for (routine of routines; track routine.id) {
+      <ion-card class="routine-card" button (click)="openRoutine(routine.id)">
+        <ion-card-header>
+          <ion-card-title>{{ routine.name }}</ion-card-title>
+        </ion-card-header>
+        @if (routine.notes) {
+        <ion-card-content>{{ routine.notes }}</ion-card-content>
+        }
+      </ion-card>
+      }
+    </ion-list>
+    }
+  </main>
+</ion-content>
+<app-tabs></app-tabs>

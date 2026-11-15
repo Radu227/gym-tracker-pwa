@@ -57,12 +57,24 @@ ion-header ion-toolbar {
   backdrop-filter: blur(12px);
 }
 
-ion-header .app-logo {
+.home-toolbar {
+  position: relative;
+}
+
+.home-toolbar .app-logo {
+  position: absolute;
+  top: 50%;
+  left: 12px;
   width: 34px;
   height: 34px;
-  margin-left: 12px;
+  margin: 0;
   border-radius: 50%;
   object-fit: cover;
+  transform: translateY(-50%);
+}
+
+.home-toolbar ion-title {
+  text-align: center;
 }
 
 ion-title {

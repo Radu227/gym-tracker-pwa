@@ -2,7 +2,14 @@ import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { IonIcon, IonLabel, IonTabBar, IonTabButton } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { barChartOutline, calendarOutline, homeOutline, radioButtonOnOutline, timeOutline, trophyOutline } from 'ionicons/icons';
+import {
+  barChartOutline,
+  calendarOutline,
+  homeOutline,
+  radioButtonOnOutline,
+  timeOutline,
+  trophyOutline,
+} from 'ionicons/icons';
 
 @Component({
   selector: 'app-tabs',

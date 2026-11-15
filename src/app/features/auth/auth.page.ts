@@ -19,13 +19,20 @@ export class AuthPage {
 
   email = '';
   password = '';
+  newPassword = '';
+  confirmPassword = '';
   isSignUp = false;
+  isForgotPassword = false;
   isSubmitting = false;
   errorMessage: string | null = null;
   infoMessage: string | null = null;
 
   get isSupabaseConfigured(): boolean {
     return this.runtimeConfig.isSupabaseConfigured;
+  }
+
+  get isRecoveryMode(): boolean {
+    return this.auth.isPasswordRecovery();
   }
 
   async submit(): Promise<void> {
@@ -38,7 +45,6 @@ export class AuthPage {
     }
 
     this.isSubmitting = true;
-
     try {
       if (this.isSignUp) {
         const { session } = await this.auth.signUp(this.email, this.password);
@@ -48,16 +54,74 @@ export class AuthPage {
         }
         await this.router.navigateByUrl('/onboarding', { replaceUrl: true });
         return;
-      } else {
-        await this.auth.signIn(this.email, this.password);
       }
 
+      await this.auth.signIn(this.email, this.password);
       await this.router.navigateByUrl('/home', { replaceUrl: true });
     } catch (error) {
       this.errorMessage = toErrorMessage(error);
     } finally {
       this.isSubmitting = false;
     }
+  }
+
+  async requestPasswordReset(): Promise<void> {
+    this.errorMessage = null;
+    this.infoMessage = null;
+
+    if (!this.email.trim()) {
+      this.errorMessage = 'Completează emailul pentru a primi linkul de resetare.';
+      return;
+    }
+
+    this.isSubmitting = true;
+    try {
+      await this.auth.requestPasswordReset(this.email);
+      this.infoMessage = 'Ți-am trimis un email cu linkul de resetare a parolei. Verifică și folderul Spam.';
+    } catch (error) {
+      this.errorMessage = toErrorMessage(error);
+    } finally {
+      this.isSubmitting = false;
+    }
+  }
+
+  async saveNewPassword(): Promise<void> {
+    this.errorMessage = null;
+    this.infoMessage = null;
+
+    if (this.newPassword.length < 6) {
+      this.errorMessage = 'Parola nouă trebuie să aibă cel puțin 6 caractere.';
+      return;
+    }
+    if (this.newPassword !== this.confirmPassword) {
+      this.errorMessage = 'Parolele nu coincid.';
+      return;
+    }
+
+    this.isSubmitting = true;
+    try {
+      await this.auth.updatePassword(this.newPassword);
+      this.infoMessage = 'Parola a fost schimbată cu succes. Te redirecționăm…';
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+      this.auth.clearPasswordRecovery();
+      await this.router.navigateByUrl('/home', { replaceUrl: true });
+    } catch (error) {
+      this.errorMessage = toErrorMessage(error);
+    } finally {
+      this.isSubmitting = false;
+    }
+  }
+
+  startPasswordReset(): void {
+    this.isForgotPassword = true;
+    this.errorMessage = null;
+    this.infoMessage = null;
+  }
+
+  cancelPasswordReset(): void {
+    this.isForgotPassword = false;
+    this.errorMessage = null;
+    this.infoMessage = null;
   }
 
   toggleMode(): void {

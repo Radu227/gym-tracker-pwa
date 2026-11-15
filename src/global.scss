@@ -57,6 +57,14 @@ ion-header ion-toolbar {
   backdrop-filter: blur(12px);
 }
 
+ion-header .app-logo {
+  width: 34px;
+  height: 34px;
+  margin-left: 12px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
 ion-title {
   font-size: 1.05rem;
   font-weight: 800;

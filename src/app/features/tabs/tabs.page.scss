@@ -4,4 +4,20 @@
   --color-selected: var(--app-accent);
   border-top: 1px solid var(--app-border);
   backdrop-filter: blur(16px);
+  overflow: hidden;
+
+  ion-tab-button {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: none;
+    padding-inline: 0;
+  }
+
+  ion-label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 10px;
+  }
 }

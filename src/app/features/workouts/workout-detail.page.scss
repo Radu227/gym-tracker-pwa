@@ -69,12 +69,15 @@
 
 .exercise-list {
   margin: 0 0 16px;
-  padding-left: 20px;
-  color: var(--ion-text-color);
+  padding: 0;
+  list-style: none;
 }
 
 .exercise-list li {
-  padding: 6px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
 }
 
 .sync-label {
@@ -85,16 +88,42 @@
 }
 
 .exercise-link {
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--ion-color-primary);
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 46px;
+  padding: 10px 14px;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  border-radius: var(--app-radius-control);
+  background: var(--app-accent-glow);
+  color: #fbbf24;
   cursor: pointer;
   font: inherit;
+  font-weight: 700;
   text-align: left;
 }
 
+.exercise-link::after {
+  content: '›';
+  color: var(--app-accent);
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.exercise-link:not(:disabled):hover,
+.exercise-link:not(:disabled):focus-visible {
+  border-color: var(--app-accent);
+  background: rgba(245, 158, 11, 0.2);
+}
+
 .exercise-link:disabled {
-  color: inherit;
+  border-color: var(--app-border);
+  background: var(--app-surface-secondary);
+  color: var(--app-muted);
   cursor: default;
+}
+
+.exercise-link:disabled::after {
+  color: var(--app-muted);
 }

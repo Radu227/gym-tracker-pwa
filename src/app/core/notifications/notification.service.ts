@@ -5,6 +5,7 @@ import { RuntimeConfigService } from '../supabase/runtime-config.service';
 import { SupabaseClientService } from '../supabase/supabase-client.service';
 
 const LOCAL_NOTIFICATION_KEY = 'gym-tracker:last-inactivity-notification';
+const SERVICE_WORKER_TIMEOUT_MS = 10_000;
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
@@ -47,11 +48,18 @@ export class NotificationService {
       throw new Error('Permisiunea pentru notificări nu a fost acordată.');
     }
 
-    const registration = await navigator.serviceWorker.ready;
-    const subscription = await registration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: decodeBase64Url(publicKey) as BufferSource,
-    });
+    const registration = await this.getServiceWorkerRegistration();
+    let subscription = await registration.pushManager.getSubscription();
+    if (!subscription) {
+      try {
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: decodeBase64Url(publicKey) as BufferSource,
+        });
+      } catch (error) {
+        throw new Error(toPushErrorMessage(error), { cause: error });
+      }
+    }
     const json = subscription.toJSON();
     const p256dh = json.keys?.['p256dh'];
     const auth = json.keys?.['auth'];
@@ -70,7 +78,7 @@ export class NotificationService {
       { onConflict: 'endpoint' },
     );
     if (error) {
-      throw error;
+      throw new Error(`Abonamentul nu a putut fi salvat în cloud: ${error.message}`);
     }
 
     this.isEnabled.set(true);
@@ -172,7 +180,37 @@ export class NotificationService {
   }
 
   private hasNotificationSupport(): boolean {
-    return typeof window !== 'undefined' && 'Notification' in window && 'serviceWorker' in navigator;
+    return (
+      typeof window !== 'undefined' &&
+      window.isSecureContext &&
+      'Notification' in window &&
+      'serviceWorker' in navigator &&
+      'PushManager' in window
+    );
+  }
+
+  private async getServiceWorkerRegistration(): Promise<ServiceWorkerRegistration> {
+    try {
+      return await Promise.race([
+        navigator.serviceWorker.ready,
+        new Promise<never>((_, reject) => {
+          setTimeout(
+            () =>
+              reject(
+                new Error(
+                  'Service Worker-ul nu este activ. Instalează aplicația pe HTTPS și încearcă din nou după reîncărcare.',
+                ),
+              ),
+            SERVICE_WORKER_TIMEOUT_MS,
+          );
+        }),
+      ]);
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Service Worker-ul nu a putut fi activat pentru notificări.', { cause: error });
+    }
   }
 }
 
@@ -191,4 +229,22 @@ function startOfDay(date: Date): Date {
 
 function toDateKey(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+function toPushErrorMessage(error: unknown): string {
+  if (error instanceof DOMException) {
+    if (error.name === 'NotAllowedError') {
+      return 'Permisiunea pentru notificări a fost blocată. Activeaz-o din setările browserului și încearcă din nou.';
+    }
+    if (error.name === 'InvalidCharacterError' || error.name === 'TypeError') {
+      return 'Cheia publică VAPID nu este validă pe server.';
+    }
+    if (error.message) {
+      return `Notificările Web Push nu au putut fi activate: ${error.message}`;
+    }
+  }
+  if (error instanceof Error && error.message) {
+    return `Notificările Web Push nu au putut fi activate: ${error.message}`;
+  }
+  return 'Notificările Web Push nu au putut fi activate. Verifică permisiunea și conexiunea HTTPS.';
 }

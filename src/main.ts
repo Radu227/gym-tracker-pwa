@@ -9,6 +9,7 @@ import {
 } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
 import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular';
+import { inject as injectAnalytics } from '@vercel/analytics';
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 
 import { AppComponent } from './app/app.component';
@@ -17,6 +18,8 @@ import { AuthService } from './app/core/auth/auth.service';
 import { NotificationService } from './app/core/notifications/notification.service';
 import { RuntimeConfigService } from './app/core/supabase/runtime-config.service';
 import { WorkoutSyncService } from './app/core/sync/workout-sync.service';
+
+injectAnalytics();
 
 bootstrapApplication(AppComponent, {
   providers: [

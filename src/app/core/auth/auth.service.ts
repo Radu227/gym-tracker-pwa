@@ -1,5 +1,6 @@
 import { inject, Injectable, signal } from '@angular/core';
 import type { SupabaseClient, User } from '@supabase/supabase-js';
+import { BehaviorSubject } from 'rxjs';
 
 import { SupabaseClientService } from '../supabase/supabase-client.service';
 
@@ -12,6 +13,7 @@ export class AuthService {
 
   readonly currentUser = signal<User | null>(null);
   readonly isInitialized = signal(false);
+  readonly isPasswordRecovery$ = new BehaviorSubject<boolean>(false);
   readonly isPasswordRecovery = signal(false);
 
   private readonly supabase = inject(SupabaseClientService);
@@ -29,14 +31,14 @@ export class AuthService {
     }
 
     if (hasPasswordRecoveryUrl()) {
-      this.isPasswordRecovery.set(true);
+      this.setPasswordRecovery(true);
     }
 
     const {
       data: { subscription },
     } = this.supabase.client.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY') {
-        this.isPasswordRecovery.set(true);
+        this.setPasswordRecovery(true);
       }
       this.setCurrentUser(session?.user ?? null);
     });
@@ -105,7 +107,7 @@ export class AuthService {
   async requestPasswordReset(email: string): Promise<void> {
     const { error } = await withTimeout(
       this.supabase.client.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: `${window.location.origin}/login`,
       }),
       AuthService.requestTimeoutMs,
       'Trimiterea emailului a depășit timpul de așteptare. Verifică conexiunea și încearcă din nou.',
@@ -133,7 +135,7 @@ export class AuthService {
   }
 
   clearPasswordRecovery(): void {
-    this.isPasswordRecovery.set(false);
+    this.setPasswordRecovery(false);
   }
 
   async changePassword(currentPassword: string, newPassword: string): Promise<void> {
@@ -171,6 +173,11 @@ export class AuthService {
       listener(user);
     }
   }
+
+  private setPasswordRecovery(value: boolean): void {
+    this.isPasswordRecovery.set(value);
+    this.isPasswordRecovery$.next(value);
+  }
 }
 
 function hasPasswordRecoveryUrl(): boolean {
@@ -178,9 +185,13 @@ function hasPasswordRecoveryUrl(): boolean {
     return false;
   }
 
+  const searchParams = new URLSearchParams(window.location.search);
+  const hashParams = new URLSearchParams(window.location.hash.slice(1));
   return (
-    new URLSearchParams(window.location.search).get('type') === 'recovery' ||
-    new URLSearchParams(window.location.hash.slice(1)).get('type') === 'recovery'
+    searchParams.get('type') === 'recovery' ||
+    hashParams.get('type') === 'recovery' ||
+    searchParams.has('code') ||
+    hashParams.has('code')
   );
 }
 

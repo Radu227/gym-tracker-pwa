@@ -1,4 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, DestroyRef, inject } from '@angular/core';
+import type { OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { IonButton, IonContent, IonHeader, IonInput, IonItem, IonNote, IonTitle, IonToolbar } from '@ionic/angular';
@@ -12,8 +14,9 @@ import { RuntimeConfigService } from '../../core/supabase/runtime-config.service
   styleUrl: './auth.page.scss',
   imports: [FormsModule, IonButton, IonContent, IonHeader, IonInput, IonItem, IonNote, IonTitle, IonToolbar],
 })
-export class AuthPage {
+export class AuthPage implements OnInit {
   private readonly auth = inject(AuthService);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
   private readonly runtimeConfig = inject(RuntimeConfigService);
 
@@ -23,6 +26,7 @@ export class AuthPage {
   confirmPassword = '';
   isSignUp = false;
   isForgotPassword = false;
+  isRecoveryMode = false;
   isSubmitting = false;
   errorMessage: string | null = null;
   infoMessage: string | null = null;
@@ -31,8 +35,13 @@ export class AuthPage {
     return this.runtimeConfig.isSupabaseConfigured;
   }
 
-  get isRecoveryMode(): boolean {
-    return this.auth.isPasswordRecovery();
+  ngOnInit(): void {
+    this.auth.isPasswordRecovery$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((isRecovery) => {
+      this.isRecoveryMode = isRecovery;
+      if (isRecovery) {
+        this.isForgotPassword = false;
+      }
+    });
   }
 
   async submit(): Promise<void> {

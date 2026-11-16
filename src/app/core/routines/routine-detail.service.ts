@@ -261,4 +261,80 @@ export class RoutineDetailService {
 
     return { exerciseName: exercise.name, muscleGroups: [...new Set(muscleGroups)] };
   }
+
+  async updateMuscleGroup(userId: string, groupId: string, name: string): Promise<MuscleGroup> {
+    const normalizedName = name.trim();
+    if (!normalizedName || normalizedName.length > 80) {
+      throw new Error('Numele grupei trebuie să aibă între 1 și 80 de caractere.');
+    }
+
+    const { data, error } = await this.supabase.client
+      .from('routine_muscle_groups')
+      .update({ name: normalizedName })
+      .eq('id', groupId)
+      .eq('user_id', userId)
+      .select('id,routine_id,user_id,name,sort_order')
+      .single();
+
+    if (error) {
+      throw error;
+    }
+    this.muscleGroupCache.delete(`${userId}:${data.routine_id}`);
+    return data as MuscleGroup;
+  }
+
+  async deleteMuscleGroup(userId: string, groupId: string): Promise<void> {
+    const { data: group, error: groupError } = await this.supabase.client
+      .from('routine_muscle_groups')
+      .select('routine_id')
+      .eq('id', groupId)
+      .eq('user_id', userId)
+      .single();
+    if (groupError) {
+      throw groupError;
+    }
+
+    const { error } = await this.supabase.client
+      .from('routine_muscle_groups')
+      .delete()
+      .eq('id', groupId)
+      .eq('user_id', userId);
+    if (error) {
+      throw error;
+    }
+    this.muscleGroupCache.delete(`${userId}:${group.routine_id}`);
+    this.exerciseCache.delete(`${userId}:${groupId}`);
+  }
+
+  async updateExercise(userId: string, exerciseId: string, name: string): Promise<RoutineExercise['exercise']> {
+    const normalizedName = name.trim();
+    if (!normalizedName || normalizedName.length > 120) {
+      throw new Error('Numele exercițiului trebuie să aibă între 1 și 120 de caractere.');
+    }
+
+    const { data, error } = await this.supabase.client
+      .from('exercises')
+      .update({ name: normalizedName, updated_at: new Date().toISOString() })
+      .eq('id', exerciseId)
+      .eq('user_id', userId)
+      .select('id,name,primary_muscle_group')
+      .single();
+    if (error) {
+      throw error;
+    }
+    return data as RoutineExercise['exercise'];
+  }
+
+  async deleteExerciseFromGroup(userId: string, routineExerciseId: string, groupId: string): Promise<void> {
+    const { error } = await this.supabase.client
+      .from('routine_exercises')
+      .delete()
+      .eq('id', routineExerciseId)
+      .eq('muscle_group_id', groupId)
+      .eq('user_id', userId);
+    if (error) {
+      throw error;
+    }
+    this.exerciseCache.delete(`${userId}:${groupId}`);
+  }
 }

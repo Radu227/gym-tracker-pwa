@@ -47,7 +47,24 @@
         <ion-card-header>
           <div class="group-heading">
             <ion-card-title>{{ group.name }}</ion-card-title>
-            <span class="muscle-pill">{{ group.name }}</span>
+            <div class="group-actions">
+              <ion-button
+                class="icon-action"
+                fill="clear"
+                aria-label="Editează grupa musculară"
+                (click)="$event.stopPropagation(); editGroup(group)"
+              >
+                <ion-icon [icon]="editIcon"></ion-icon>
+              </ion-button>
+              <ion-button
+                class="icon-action delete-action"
+                fill="clear"
+                aria-label="Șterge grupa musculară"
+                (click)="$event.stopPropagation(); deleteGroup(group)"
+              >
+                <ion-icon [icon]="deleteIcon"></ion-icon>
+              </ion-button>
+            </div>
           </div>
           @if (group.isPending) {
           <small class="sync-label">Se sincronizează…</small>
@@ -68,6 +85,22 @@
               >
                 {{ item.exercise.name }}
               </button>
+              <ion-button
+                class="icon-action"
+                fill="clear"
+                aria-label="Editează exercițiul"
+                (click)="$event.stopPropagation(); editExercise(group, item)"
+              >
+                <ion-icon [icon]="editIcon"></ion-icon>
+              </ion-button>
+              <ion-button
+                class="icon-action delete-action"
+                fill="clear"
+                aria-label="Șterge exercițiul"
+                (click)="$event.stopPropagation(); deleteExercise(group, item)"
+              >
+                <ion-icon [icon]="deleteIcon"></ion-icon>
+              </ion-button>
               @if (item.id.startsWith('local-exercise-')) {
               <small class="sync-label">Se sincronizează…</small>
               }

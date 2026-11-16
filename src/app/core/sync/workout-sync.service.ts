@@ -2,7 +2,7 @@ import { inject, Injectable, signal } from '@angular/core';
 
 import { AuthService } from '../auth/auth.service';
 import { WorkoutLocalStore } from '../offline/workout-local-store';
-import type { RecordWorkoutSetInput } from '../offline/workout-local-store';
+import type { LocalWorkoutSet, RecordWorkoutSetInput } from '../offline/workout-local-store';
 import { RuntimeConfigService } from '../supabase/runtime-config.service';
 import { SupabaseClientService } from '../supabase/supabase-client.service';
 
@@ -61,14 +61,28 @@ export class WorkoutSyncService {
     }
   }
 
-  async recordSet(input: RecordWorkoutSetInput): Promise<void> {
+  async recordSet(input: RecordWorkoutSetInput): Promise<LocalWorkoutSet> {
     const user = this.auth.currentUser();
     if (!user) {
       throw new Error('Sign in before recording a workout set');
     }
 
-    await this.localStore.recordSet(user.id, input);
+    const localSet = await this.localStore.recordSet(user.id, input);
     this.triggerSync();
+    return localSet;
+  }
+
+  async deletePendingSet(setId: string): Promise<void> {
+    const user = this.auth.currentUser();
+    if (!user) {
+      throw new Error('Sign in before deleting a workout set');
+    }
+    await this.localStore.deletePendingSet(user.id, setId);
+  }
+
+  async getLocalSet(setId: string): Promise<LocalWorkoutSet | undefined> {
+    const user = this.auth.currentUser();
+    return user ? this.localStore.getSet(user.id, setId) : undefined;
   }
 
   destroy(): void {

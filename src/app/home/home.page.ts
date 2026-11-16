@@ -12,12 +12,14 @@ import {
   IonHeader,
   IonInput,
   IonItem,
+  IonIcon,
   IonList,
   IonNote,
   IonSpinner,
   IonTitle,
   IonToolbar,
 } from '@ionic/angular';
+import { createOutline, trashOutline } from 'ionicons/icons';
 
 import { AuthService } from '../core/auth/auth.service';
 import { ProfileService, type Profile } from '../core/profile/profile.service';
@@ -40,6 +42,7 @@ import { TabsPage } from '../features/tabs/tabs.page';
     IonContent,
     IonHeader,
     IonInput,
+    IonIcon,
     IonItem,
     IonList,
     IonNote,
@@ -67,6 +70,8 @@ export class HomePage implements OnInit {
   profile: Profile | null = null;
   hasWorkoutToday = false;
   isCheckingToday = true;
+  readonly editIcon = createOutline;
+  readonly deleteIcon = trashOutline;
 
   async ngOnInit(): Promise<void> {
     await this.loadRoutines();
@@ -112,6 +117,43 @@ export class HomePage implements OnInit {
       this.errorMessage = error instanceof Error ? error.message : 'Rutina nu a putut fi creată.';
     } finally {
       this.isCreating = false;
+      this.changeDetector.detectChanges();
+    }
+  }
+
+  async editRoutine(routine: Routine): Promise<void> {
+    const name = typeof window !== 'undefined' ? window.prompt('Numele antrenamentului', routine.name) : null;
+    if (name === null) {
+      return;
+    }
+    const notes = typeof window !== 'undefined' ? window.prompt('Notițe (opțional)', routine.notes ?? '') : null;
+    if (notes === null) {
+      return;
+    }
+
+    this.errorMessage = null;
+    try {
+      const updated = await this.routinesService.update(this.auth.currentUser()!.id, routine.id, name, notes);
+      this.routines = this.routines.map((item) => (item.id === routine.id ? updated : item));
+    } catch (error) {
+      this.errorMessage = error instanceof Error ? error.message : 'Rutina nu a putut fi modificată.';
+    } finally {
+      this.changeDetector.detectChanges();
+    }
+  }
+
+  async deleteRoutine(routine: Routine): Promise<void> {
+    if (typeof window !== 'undefined' && !window.confirm(`Ștergi antrenamentul „${routine.name}”?`)) {
+      return;
+    }
+
+    this.errorMessage = null;
+    try {
+      await this.routinesService.delete(this.auth.currentUser()!.id, routine.id);
+      this.routines = this.routines.filter((item) => item.id !== routine.id);
+    } catch (error) {
+      this.errorMessage = error instanceof Error ? error.message : 'Antrenamentul nu a putut fi șters.';
+    } finally {
       this.changeDetector.detectChanges();
     }
   }

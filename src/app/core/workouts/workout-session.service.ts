@@ -121,7 +121,9 @@ export class WorkoutSessionService {
 
     const sets = (data ?? []) as CurrentWorkoutSet[];
     const latestSessionId = sets[0]?.session_id;
-    return latestSessionId ? sets.filter((set) => set.session_id === latestSessionId) : [];
+    return latestSessionId
+      ? sets.filter((set) => set.session_id === latestSessionId).sort((a, b) => a.set_number - b.set_number)
+      : [];
   }
 
   async correctSet(
@@ -146,6 +148,29 @@ export class WorkoutSessionService {
     const row = Array.isArray(data) ? data[0] : null;
     if (!row || typeof row.event_id !== 'string') {
       throw new Error('Supabase nu a returnat identificatorul modificării.');
+    }
+    return row.event_id;
+  }
+
+  async voidSet(set: CurrentWorkoutSet): Promise<string> {
+    const { data, error } = await this.supabase.client.rpc('correct_workout_set', {
+      p_workout_set_id: set.workout_set_id,
+      p_previous_event_id: set.current_event_id,
+      p_event_type: 'voided',
+      p_reps: set.reps,
+      p_weight_kg: set.weight_kg,
+      p_is_failure: set.is_failure,
+      p_notes: set.notes,
+      p_client_mutation_id: crypto.randomUUID(),
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    const row = Array.isArray(data) ? data[0] : null;
+    if (!row || typeof row.event_id !== 'string') {
+      throw new Error('Supabase nu a returnat identificatorul ștergerii.');
     }
     return row.event_id;
   }

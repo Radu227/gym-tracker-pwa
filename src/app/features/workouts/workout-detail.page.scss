@@ -29,15 +29,10 @@
   gap: 12px;
 }
 
-.muscle-pill {
-  padding: 4px 10px;
-  border: 1px solid rgba(245, 158, 11, 0.35);
-  border-radius: 999px;
-  background: var(--app-accent-glow);
-  color: #fbbf24;
-  font-size: 0.7rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
+.group-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 2px;
 }
 
 .form-field {
@@ -78,6 +73,23 @@
   align-items: center;
   gap: 8px;
   margin-bottom: 10px;
+}
+
+.icon-action {
+  --padding-start: 6px;
+  --padding-end: 6px;
+  --color: var(--app-muted);
+  min-width: 32px;
+  min-height: 32px;
+  margin: 0;
+}
+
+.icon-action ion-icon {
+  font-size: 1.15rem;
+}
+
+.icon-action.delete-action {
+  --color: var(--ion-color-danger);
 }
 
 .sync-label {

@@ -13,12 +13,14 @@ import {
   IonContent,
   IonHeader,
   IonInput,
+  IonIcon,
   IonItem,
   IonNote,
   IonTitle,
   IonToggle,
   IonToolbar,
 } from '@ionic/angular';
+import { trashOutline } from 'ionicons/icons';
 
 import { AuthService } from '../../core/auth/auth.service';
 import { RoutineService } from '../../core/routines/routine.service';
@@ -31,6 +33,7 @@ import {
 } from '../../core/workouts/workout-session.service';
 
 interface SetRow {
+  rowId: string;
   setNumber: number;
   reps: number;
   weightKg: number;
@@ -41,6 +44,7 @@ interface SetRow {
   originalIsFailure: boolean;
   originalNotes: string;
   source?: CurrentWorkoutSet;
+  localId?: string;
   saving: boolean;
 }
 
@@ -60,6 +64,7 @@ interface SetRow {
     IonContent,
     IonHeader,
     IonInput,
+    IonIcon,
     IonItem,
     IonNote,
     IonTitle,
@@ -82,6 +87,7 @@ export class WorkoutSessionPage implements OnInit {
   newSet: SetRow | null = null;
   isLoading = true;
   errorMessage: string | null = null;
+  readonly deleteIcon = trashOutline;
   async ngOnInit(): Promise<void> {
     await this.load();
   }
@@ -91,8 +97,10 @@ export class WorkoutSessionPage implements OnInit {
       return;
     }
     const previous = this.sets[this.sets.length - 1];
+    const nextSetNumber = this.sets.reduce((maximum, set) => Math.max(maximum, set.setNumber), 0) + 1;
     this.newSet = {
-      setNumber: this.sets.length + 1,
+      rowId: `new-${crypto.randomUUID()}`,
+      setNumber: nextSetNumber,
       reps: previous?.reps ?? 8,
       weightKg: previous?.weightKg ?? 0,
       isFailure: false,
@@ -118,7 +126,7 @@ export class WorkoutSessionPage implements OnInit {
     const set = this.newSet;
     set.saving = true;
     try {
-      await this.syncService.recordSet({
+      const localSet = await this.syncService.recordSet({
         workoutSessionId: this.session.id,
         exerciseId: this.exercise.id,
         setNumber: set.setNumber,
@@ -127,7 +135,9 @@ export class WorkoutSessionPage implements OnInit {
         isFailure: set.isFailure,
         notes: set.notes,
       });
-      this.sets = [...this.sets, set];
+      set.localId = localSet.id;
+      set.rowId = localSet.id;
+      this.sets = [...this.sets, set].sort((left, right) => left.setNumber - right.setNumber);
       this.newSet = null;
     } catch (error) {
       this.errorMessage = toErrorMessage(error, 'Seria nu a putut fi salvată.');
@@ -167,6 +177,48 @@ export class WorkoutSessionPage implements OnInit {
       set.originalNotes = set.notes;
     } catch (error) {
       this.errorMessage = toErrorMessage(error, 'Modificările nu au putut fi salvate.');
+    } finally {
+      set.saving = false;
+      this.changeDetector.detectChanges();
+    }
+  }
+
+  async deleteSet(set: SetRow): Promise<void> {
+    if (set.saving || (typeof window !== 'undefined' && !window.confirm(`Ștergi Seria ${set.setNumber}?`))) {
+      return;
+    }
+
+    set.saving = true;
+    this.errorMessage = null;
+    try {
+      if (set.source) {
+        await this.sessionService.voidSet(set.source);
+      } else if (set.localId) {
+        const localSet = await this.syncService.getLocalSet(set.localId);
+        if (!localSet) {
+          throw new Error('Seria locală nu mai există.');
+        }
+        if (localSet.syncStatus === 'pending') {
+          await this.syncService.deletePendingSet(set.localId);
+        } else if (localSet.serverSetId && localSet.serverEventId) {
+          await this.sessionService.voidSet({
+            workout_set_id: localSet.serverSetId,
+            current_event_id: localSet.serverEventId,
+            session_id: localSet.workoutSessionId,
+            exercise_id: localSet.exerciseId,
+            set_number: localSet.setNumber,
+            reps: localSet.reps,
+            weight_kg: localSet.weightKg,
+            is_failure: localSet.isFailure,
+            is_voided: false,
+            notes: localSet.notes,
+            performed_at: localSet.performedAt,
+          });
+        }
+      }
+      this.sets = this.sets.filter((item) => item.rowId !== set.rowId);
+    } catch (error) {
+      this.errorMessage = toErrorMessage(error, 'Seria nu a putut fi ștearsă.');
     } finally {
       set.saving = false;
       this.changeDetector.detectChanges();
@@ -217,6 +269,7 @@ export class WorkoutSessionPage implements OnInit {
 
 function toSetRow(set: CurrentWorkoutSet): SetRow {
   return {
+    rowId: set.workout_set_id,
     setNumber: set.set_number,
     reps: set.reps,
     weightKg: Number(set.weight_kg),

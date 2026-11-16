@@ -130,3 +130,33 @@ h1 {
   background: transparent;
 }
 
+.routine-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 2px;
+}
+
+.routine-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.icon-action {
+  --padding-start: 6px;
+  --padding-end: 6px;
+  --color: var(--app-muted);
+  min-width: 32px;
+  min-height: 32px;
+  margin: 0;
+}
+
+.icon-action ion-icon {
+  font-size: 1.15rem;
+}
+
+.icon-action.delete-action {
+  --color: var(--ion-color-danger);
+}
+

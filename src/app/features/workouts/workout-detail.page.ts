@@ -13,12 +13,14 @@ import {
   IonContent,
   IonHeader,
   IonInput,
+  IonIcon,
   IonItem,
   IonList,
   IonNote,
   IonTitle,
   IonToolbar,
 } from '@ionic/angular';
+import { createOutline, trashOutline } from 'ionicons/icons';
 
 import { AuthService } from '../../core/auth/auth.service';
 import {
@@ -52,6 +54,7 @@ interface MuscleGroupView extends MuscleGroup {
     IonContent,
     IonHeader,
     IonInput,
+    IonIcon,
     IonItem,
     IonList,
     IonNote,
@@ -73,6 +76,8 @@ export class WorkoutDetailPage implements OnInit {
   isLoading = true;
   isAddingGroup = false;
   errorMessage: string | null = null;
+  readonly editIcon = createOutline;
+  readonly deleteIcon = trashOutline;
 
   async ngOnInit(): Promise<void> {
     await this.load();
@@ -189,6 +194,86 @@ export class WorkoutDetailPage implements OnInit {
       this.errorMessage = toErrorMessage(error, 'Exercițiul nu a putut fi adăugat.');
     }
     this.changeDetector.detectChanges();
+  }
+
+  async editGroup(group: MuscleGroupView): Promise<void> {
+    const name = typeof window !== 'undefined' ? window.prompt('Numele grupei musculare', group.name) : null;
+    if (name === null) {
+      return;
+    }
+
+    const user = this.auth.currentUser();
+    if (!user) {
+      return;
+    }
+    try {
+      const updated = await this.detailService.updateMuscleGroup(user.id, group.id, name);
+      this.groups = this.groups.map((item) => (item.id === group.id ? { ...item, name: updated.name } : item));
+    } catch (error) {
+      this.errorMessage = toErrorMessage(error, 'Grupa musculară nu a putut fi modificată.');
+    } finally {
+      this.changeDetector.detectChanges();
+    }
+  }
+
+  async deleteGroup(group: MuscleGroupView): Promise<void> {
+    if (typeof window !== 'undefined' && !window.confirm(`Ștergi grupa „${group.name}” și exercițiile ei?`)) {
+      return;
+    }
+    const user = this.auth.currentUser();
+    if (!user) {
+      return;
+    }
+
+    try {
+      await this.detailService.deleteMuscleGroup(user.id, group.id);
+      this.groups = this.groups.filter((item) => item.id !== group.id);
+    } catch (error) {
+      this.errorMessage = toErrorMessage(error, 'Grupa musculară nu a putut fi ștearsă.');
+    } finally {
+      this.changeDetector.detectChanges();
+    }
+  }
+
+  async editExercise(group: MuscleGroupView, item: RoutineExercise): Promise<void> {
+    const name = typeof window !== 'undefined' ? window.prompt('Numele exercițiului', item.exercise.name) : null;
+    if (name === null) {
+      return;
+    }
+    const user = this.auth.currentUser();
+    if (!user) {
+      return;
+    }
+
+    try {
+      const updated = await this.detailService.updateExercise(user.id, item.exercise_id, name);
+      group.exercises = group.exercises.map((exercise) =>
+        exercise.exercise_id === item.exercise_id ? { ...exercise, exercise: updated } : exercise,
+      );
+    } catch (error) {
+      this.errorMessage = toErrorMessage(error, 'Exercițiul nu a putut fi modificat.');
+    } finally {
+      this.changeDetector.detectChanges();
+    }
+  }
+
+  async deleteExercise(group: MuscleGroupView, item: RoutineExercise): Promise<void> {
+    if (typeof window !== 'undefined' && !window.confirm(`Ștergi exercițiul „${item.exercise.name}” din grupă?`)) {
+      return;
+    }
+    const user = this.auth.currentUser();
+    if (!user) {
+      return;
+    }
+
+    try {
+      await this.detailService.deleteExerciseFromGroup(user.id, item.id, group.id);
+      group.exercises = group.exercises.filter((exercise) => exercise.id !== item.id);
+    } catch (error) {
+      this.errorMessage = toErrorMessage(error, 'Exercițiul nu a putut fi șters din grupă.');
+    } finally {
+      this.changeDetector.detectChanges();
+    }
   }
 
   async openExercise(exercise: RoutineExercise): Promise<void> {

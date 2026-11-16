@@ -3,6 +3,8 @@ import Dexie from 'dexie';
 
 import { gymDatabase, type LocalWorkoutSet, type SetSyncOutboxEntry } from './gym-database';
 
+export type { LocalWorkoutSet } from './gym-database';
+
 export interface RecordWorkoutSetInput {
   workoutSessionId: string;
   exerciseId: string;
@@ -77,6 +79,26 @@ export class WorkoutLocalStore {
 
   async listSets(userId: string): Promise<LocalWorkoutSet[]> {
     return this.database.workoutSets.where('userId').equals(userId).toArray();
+  }
+
+  async deletePendingSet(userId: string, setId: string): Promise<void> {
+    await this.database.transaction('rw', this.database.workoutSets, this.database.syncOutbox, async () => {
+      const set = await this.database.workoutSets.get(setId);
+      if (!set || set.userId !== userId) {
+        throw new Error('Seria locală nu a fost găsită.');
+      }
+
+      if (set.syncStatus !== 'pending') {
+        throw new Error('Seria a fost deja sincronizată și nu mai poate fi eliminată local.');
+      }
+      await this.database.workoutSets.delete(setId);
+      await this.database.syncOutbox.delete(setId);
+    });
+  }
+
+  async getSet(userId: string, setId: string): Promise<LocalWorkoutSet | undefined> {
+    const set = await this.database.workoutSets.get(setId);
+    return set?.userId === userId ? set : undefined;
   }
 
   async markSetSynced(userId: string, setId: string, serverSetId: string, serverEventId: string): Promise<void> {

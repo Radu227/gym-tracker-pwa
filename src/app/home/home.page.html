@@ -87,7 +87,27 @@
       @for (routine of routines; track routine.id) {
       <ion-card class="routine-card" button (click)="openRoutine(routine.id)">
         <ion-card-header>
-          <ion-card-title>{{ routine.name }}</ion-card-title>
+          <div class="routine-heading">
+            <ion-card-title>{{ routine.name }}</ion-card-title>
+            <div class="routine-actions">
+              <ion-button
+                class="icon-action"
+                fill="clear"
+                aria-label="Editează antrenamentul"
+                (click)="$event.stopPropagation(); editRoutine(routine)"
+              >
+                <ion-icon [icon]="editIcon"></ion-icon>
+              </ion-button>
+              <ion-button
+                class="icon-action delete-action"
+                fill="clear"
+                aria-label="Șterge antrenamentul"
+                (click)="$event.stopPropagation(); deleteRoutine(routine)"
+              >
+                <ion-icon [icon]="deleteIcon"></ion-icon>
+              </ion-button>
+            </div>
+          </div>
         </ion-card-header>
         @if (routine.notes) {
         <ion-card-content>{{ routine.notes }}</ion-card-content>

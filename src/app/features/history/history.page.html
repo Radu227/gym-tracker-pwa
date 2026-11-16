@@ -26,7 +26,7 @@
           <ion-select [(ngModel)]="selectedExerciseId" (ionChange)="onExerciseChanged()">
             @for (exercise of exercises; track exercise.id) {
             <ion-select-option [value]="exercise.id">
-              {{ exercise.primary_muscle_group }} · {{ exercise.name }}
+              {{ exercise.primary_muscle_group ? exercise.primary_muscle_group + ' · ' : '' }}{{ exercise.name }}
             </ion-select-option>
             }
           </ion-select>

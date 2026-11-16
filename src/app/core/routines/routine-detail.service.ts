@@ -184,12 +184,23 @@ export class RoutineDetailService {
       throw new Error('Numele exercițiului trebuie să aibă între 1 și 120 de caractere.');
     }
 
+    const { data: muscleGroup, error: muscleGroupError } = await this.supabase.client
+      .from('routine_muscle_groups')
+      .select('name')
+      .eq('id', muscleGroupId)
+      .eq('user_id', userId)
+      .single();
+
+    if (muscleGroupError) {
+      throw muscleGroupError;
+    }
+
     const { data: exercise, error: exerciseError } = await this.supabase.client
       .from('exercises')
       .insert({
         user_id: userId,
         name: normalizedName,
-        primary_muscle_group: 'Nespecificat',
+        primary_muscle_group: muscleGroup.name,
       })
       .select('id,name,primary_muscle_group')
       .single();
@@ -268,6 +279,16 @@ export class RoutineDetailService {
       throw new Error('Numele grupei trebuie să aibă între 1 și 80 de caractere.');
     }
 
+    const { data: linkedExercises, error: linkedExercisesError } = await this.supabase.client
+      .from('routine_exercises')
+      .select('exercise_id')
+      .eq('user_id', userId)
+      .eq('muscle_group_id', groupId);
+
+    if (linkedExercisesError) {
+      throw linkedExercisesError;
+    }
+
     const { data, error } = await this.supabase.client
       .from('routine_muscle_groups')
       .update({ name: normalizedName })
@@ -279,7 +300,21 @@ export class RoutineDetailService {
     if (error) {
       throw error;
     }
+
+    const exerciseIds = [...new Set((linkedExercises ?? []).map((item) => item.exercise_id))];
+    if (exerciseIds.length > 0) {
+      const { error: exercisesError } = await this.supabase.client
+        .from('exercises')
+        .update({ primary_muscle_group: normalizedName, updated_at: new Date().toISOString() })
+        .eq('user_id', userId)
+        .in('id', exerciseIds);
+      if (exercisesError) {
+        throw exercisesError;
+      }
+    }
+
     this.muscleGroupCache.delete(`${userId}:${data.routine_id}`);
+    this.exerciseCache.delete(`${userId}:${groupId}`);
     return data as MuscleGroup;
   }
 

@@ -49,7 +49,7 @@ export interface WorkoutSetHistoryEntry {
 export interface ExerciseOption {
   id: string;
   name: string;
-  primary_muscle_group: string;
+  primary_muscle_group: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -176,18 +176,47 @@ export class WorkoutSessionService {
   }
 
   async listExercises(userId: string): Promise<ExerciseOption[]> {
-    const { data, error } = await this.supabase.client
-      .from('exercises')
-      .select('id,name,primary_muscle_group')
-      .eq('user_id', userId)
-      .order('primary_muscle_group', { ascending: true })
-      .order('name', { ascending: true });
+    const [{ data: exercises, error: exercisesError }, { data: routineExercises, error: routineExercisesError }] =
+      await Promise.all([
+        this.supabase.client
+          .from('exercises')
+          .select('id,name,primary_muscle_group')
+          .eq('user_id', userId)
+          .order('name', { ascending: true }),
+        this.supabase.client
+          .from('routine_exercises')
+          .select('exercise_id,routine_muscle_groups(name)')
+          .eq('user_id', userId),
+      ]);
 
-    if (error) {
-      throw error;
+    if (exercisesError) {
+      throw exercisesError;
+    }
+    if (routineExercisesError) {
+      throw routineExercisesError;
     }
 
-    return (data ?? []) as ExerciseOption[];
+    const muscleGroupByExercise = new Map<string, string>();
+    for (const row of routineExercises ?? []) {
+      const group = Array.isArray(row.routine_muscle_groups) ? row.routine_muscle_groups[0] : row.routine_muscle_groups;
+      const name = normalizeMuscleGroup(group?.name);
+      if (name && !muscleGroupByExercise.has(row.exercise_id)) {
+        muscleGroupByExercise.set(row.exercise_id, name);
+      }
+    }
+
+    return (exercises ?? [])
+      .map((exercise) => ({
+        id: exercise.id,
+        name: exercise.name,
+        primary_muscle_group:
+          muscleGroupByExercise.get(exercise.id) ?? normalizeMuscleGroup(exercise.primary_muscle_group),
+      }))
+      .sort((left, right) => {
+        const leftGroup = left.primary_muscle_group ?? '';
+        const rightGroup = right.primary_muscle_group ?? '';
+        return leftGroup.localeCompare(rightGroup, 'ro') || left.name.localeCompare(right.name, 'ro');
+      });
   }
 
   async listHistory(userId: string, exerciseId: string): Promise<WorkoutSetHistoryEntry[]> {
@@ -223,4 +252,9 @@ export class WorkoutSessionService {
       } as WorkoutSetHistoryEntry;
     });
   }
+}
+
+function normalizeMuscleGroup(value: string | null | undefined): string | null {
+  const normalized = value?.trim();
+  return normalized && normalized.toLowerCase() !== 'nespecificat' ? normalized : null;
 }

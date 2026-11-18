@@ -113,17 +113,50 @@ export class WorkoutSessionService {
       .eq('is_voided', false)
       .order('performed_at', { ascending: false })
       .order('set_number', { ascending: true })
-      .limit(100);
+      .limit(5000);
 
     if (error) {
       throw error;
     }
 
     const sets = (data ?? []) as CurrentWorkoutSet[];
-    const latestSessionId = sets[0]?.session_id;
-    return latestSessionId
-      ? sets.filter((set) => set.session_id === latestSessionId).sort((a, b) => a.set_number - b.set_number)
-      : [];
+    if (sets.length === 0) {
+      return [];
+    }
+
+    const sessionIds = [...new Set(sets.map((set) => set.session_id))];
+    const { data: sessions, error: sessionsError } = await this.supabase.client
+      .from('workout_sessions')
+      .select('id,started_at')
+      .eq('user_id', userId)
+      .neq('status', 'abandoned')
+      .in('id', sessionIds);
+
+    if (sessionsError) {
+      throw sessionsError;
+    }
+
+    const sessionStartedAt = new Map(
+      (sessions ?? []).map((session) => [session.id, new Date(session.started_at).getTime()]),
+    );
+    const orderedSets = [...sets].sort((left, right) => {
+      const leftSessionTime = sessionStartedAt.get(left.session_id) ?? 0;
+      const rightSessionTime = sessionStartedAt.get(right.session_id) ?? 0;
+      return (
+        rightSessionTime - leftSessionTime ||
+        new Date(right.performed_at).getTime() - new Date(left.performed_at).getTime() ||
+        left.set_number - right.set_number
+      );
+    });
+
+    const latestSetByNumber = new Map<number, CurrentWorkoutSet>();
+    for (const set of orderedSets) {
+      if (!latestSetByNumber.has(set.set_number)) {
+        latestSetByNumber.set(set.set_number, set);
+      }
+    }
+
+    return [...latestSetByNumber.values()].sort((a, b) => a.set_number - b.set_number);
   }
 
   async correctSet(

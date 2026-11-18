@@ -85,6 +85,11 @@ export class WorkoutSyncService {
     return user ? this.localStore.getSet(user.id, setId) : undefined;
   }
 
+  async listLocalSets(): Promise<LocalWorkoutSet[]> {
+    const user = this.auth.currentUser();
+    return user ? this.localStore.listSets(user.id) : [];
+  }
+
   destroy(): void {
     if (typeof window !== 'undefined') {
       window.removeEventListener('online', this.handleOnline);

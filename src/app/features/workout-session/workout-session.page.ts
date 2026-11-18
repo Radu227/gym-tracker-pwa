@@ -23,6 +23,7 @@ import {
 import { trashOutline } from 'ionicons/icons';
 
 import { AuthService } from '../../core/auth/auth.service';
+import type { LocalWorkoutSet } from '../../core/offline/workout-local-store';
 import { RoutineService } from '../../core/routines/routine.service';
 import { WorkoutSyncService } from '../../core/sync/workout-sync.service';
 import {
@@ -175,6 +176,7 @@ export class WorkoutSessionPage implements OnInit {
       set.originalWeightKg = set.weightKg;
       set.originalIsFailure = set.isFailure;
       set.originalNotes = set.notes;
+      this.sets = [...this.sets].sort((left, right) => left.setNumber - right.setNumber);
     } catch (error) {
       this.errorMessage = toErrorMessage(error, 'Modificările nu au putut fi salvate.');
     } finally {
@@ -216,7 +218,9 @@ export class WorkoutSessionPage implements OnInit {
           });
         }
       }
-      this.sets = this.sets.filter((item) => item.rowId !== set.rowId);
+      this.sets = this.sets
+        .filter((item) => item.rowId !== set.rowId)
+        .sort((left, right) => left.setNumber - right.setNumber);
     } catch (error) {
       this.errorMessage = toErrorMessage(error, 'Seria nu a putut fi ștearsă.');
     } finally {
@@ -251,9 +255,27 @@ export class WorkoutSessionPage implements OnInit {
 
       try {
         const previousSets = await this.sessionService.listLastSets(user.id, exerciseId);
-        if (previousSets.length > 0) {
-          this.sets = previousSets.map(toSetRow);
+        const remoteRows = previousSets.map(toSetRow);
+        const localSets = await this.syncService.listLocalSets();
+        const currentSessionId = this.session?.id;
+        const localRows = localSets
+          .filter(
+            (set) =>
+              currentSessionId !== undefined &&
+              set.workoutSessionId === currentSessionId &&
+              set.exerciseId === exerciseId &&
+              (set.syncStatus === 'pending' || set.syncStatus === 'synced'),
+          )
+          .map(toLocalSetRow);
+
+        const rowsBySetNumber = new Map<number, SetRow>();
+        for (const row of remoteRows) {
+          rowsBySetNumber.set(row.setNumber, row);
         }
+        for (const row of localRows) {
+          rowsBySetNumber.set(row.setNumber, row);
+        }
+        this.sets = [...rowsBySetNumber.values()].sort((left, right) => left.setNumber - right.setNumber);
       } catch {
         this.errorMessage = 'Istoricul ultimei sesiuni nu este disponibil momentan. Poți continua cu o serie nouă.';
       }
@@ -280,6 +302,41 @@ function toSetRow(set: CurrentWorkoutSet): SetRow {
     originalIsFailure: set.is_failure,
     originalNotes: set.notes ?? '',
     source: set,
+    saving: false,
+  };
+}
+
+function toLocalSetRow(set: LocalWorkoutSet): SetRow {
+  const source: CurrentWorkoutSet | undefined =
+    set.serverSetId && set.serverEventId
+      ? {
+          workout_set_id: set.serverSetId,
+          current_event_id: set.serverEventId,
+          session_id: set.workoutSessionId,
+          exercise_id: set.exerciseId,
+          set_number: set.setNumber,
+          reps: set.reps,
+          weight_kg: set.weightKg,
+          is_failure: set.isFailure,
+          is_voided: false,
+          notes: set.notes,
+          performed_at: set.performedAt,
+        }
+      : undefined;
+
+  return {
+    rowId: set.id,
+    setNumber: set.setNumber,
+    reps: set.reps,
+    weightKg: set.weightKg,
+    isFailure: set.isFailure,
+    notes: set.notes ?? '',
+    originalReps: set.reps,
+    originalWeightKg: set.weightKg,
+    originalIsFailure: set.isFailure,
+    originalNotes: set.notes ?? '',
+    source,
+    localId: set.id,
     saving: false,
   };
 }

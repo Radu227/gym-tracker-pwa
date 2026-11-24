@@ -25,7 +25,7 @@
           <canvas baseChart [data]="weeklyData" [options]="barOptions" type="bar"></canvas>
         </div>
         } @else {
-        <div class="empty-chart">Nu există serii suficiente pentru volumul săptămânal.</div>
+        <div class="empty-chart">Nu există antrenamente confirmate pentru volumul săptămânal.</div>
         }
       </ion-card-content>
     </ion-card>
@@ -41,7 +41,7 @@
           <canvas baseChart [data]="monthlyData" [options]="barOptions" type="bar"></canvas>
         </div>
         } @else {
-        <div class="empty-chart">Nu există serii suficiente pentru volumul lunar.</div>
+        <div class="empty-chart">Nu există antrenamente confirmate pentru volumul lunar.</div>
         }
       </ion-card-content>
     </ion-card>
@@ -92,7 +92,7 @@
           <canvas baseChart [data]="muscleData" [options]="doughnutOptions" type="doughnut"></canvas>
         </div>
         } @else {
-        <div class="empty-chart">Nu există antrenamente în ultimele 30 de zile.</div>
+        <div class="empty-chart">Adaugă serii la exercițiile tale pentru a vedea distribuția pe grupe musculare.</div>
         }
       </ion-card-content>
     </ion-card>

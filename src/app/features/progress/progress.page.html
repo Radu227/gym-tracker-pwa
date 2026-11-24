@@ -82,6 +82,86 @@
         </div>
       </ion-card-content>
     </ion-card>
+
+    @if (missedSuccessMessage) {
+    <ion-note color="success" class="notice success-notice">{{ missedSuccessMessage }}</ion-note>
+    }
+
+    <ion-card class="missed-workout-card">
+      <ion-card-header>
+        <ion-card-title>Ai uitat să înregistrezi un antrenament?</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>
+          Ai fost la sală într-o zi anterioară și ai uitat să treci antrenamentul în aplicație? Îl poți adăuga acum.
+        </p>
+        <ion-button expand="block" fill="outline" (click)="openMissedWorkoutModal()">
+          Apasă aici pentru a-l adăuga
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
   </main>
 </ion-content>
+<ion-modal [isOpen]="isMissedModalOpen" (didDismiss)="closeMissedWorkoutModal()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Antrenament uitat</ion-title>
+        <ion-buttons slot="end">
+          <ion-button fill="clear" [disabled]="isSavingMissed" (click)="closeMissedWorkoutModal()">Închide</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="missed-modal-content">
+      <div class="missed-modal-body">
+        @if (missedErrorMessage) {
+        <ion-note color="danger" class="notice" role="alert">{{ missedErrorMessage }}</ion-note>
+        }
+        <p class="modal-intro">
+          Selectează ziua și antrenamentul lucrat. Se vor salva seriile care erau active până la finalul acelei zile,
+          actualizând calendarul și graficele.
+        </p>
+        <ion-item class="form-field">
+          <ion-input
+            type="date"
+            label="Ziua antrenamentului"
+            label-placement="stacked"
+            [(ngModel)]="missedDate"
+            [max]="maxMissedDate"
+          ></ion-input>
+        </ion-item>
+        @if (routines.length === 0) {
+        <div class="empty-routines-note">
+          Nu ai încă niciun antrenament salvat. Creează mai întâi un antrenament pe pagina principală.
+        </div>
+        } @else {
+        <div class="routine-choice-list">
+          @for (routine of routines; track routine.id) {
+          <button
+            type="button"
+            class="routine-choice-btn"
+            [class.selected]="selectedRoutineId === routine.id"
+            [attr.aria-pressed]="selectedRoutineId === routine.id"
+            (click)="selectMissedRoutine(routine.id)"
+          >
+            <strong>{{ routine.name }}</strong>
+            @if (routine.notes) {
+            <span>{{ routine.notes }}</span>
+            }
+          </button>
+          }
+        </div>
+        <ion-button
+          expand="block"
+          class="confirm-missed-btn"
+          [disabled]="!missedDate || !selectedRoutineId || isSavingMissed"
+          (click)="saveMissedWorkout()"
+        >
+          {{ isSavingMissed ? 'Se salvează…' : 'Salvează antrenamentul' }}
+        </ion-button>
+        }
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>
 <app-tabs></app-tabs>

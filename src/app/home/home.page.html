@@ -33,15 +33,60 @@
     </section>
     @if (errorMessage) {
     <ion-note color="danger" class="notice" role="alert">{{ errorMessage }}</ion-note>
-    } @if (!isCheckingToday && !hasWorkoutToday) {
+    } @if (!isCheckingToday && activeWorkoutLog) {
+    <ion-card class="today-card active-timer-card">
+      <ion-card-header>
+        <ion-card-title>Antrenament în desfășurare</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="active-timer-header">
+          <div>
+            <strong class="active-routine-name">{{ activeWorkoutLog.routine_name_snapshot }}</strong>
+            <p class="timer-hint">
+              La expirarea celor 3 ore, aplicația salvează automat seriile curente ale acestui antrenament pentru
+              grafice.
+            </p>
+          </div>
+          <span class="countdown-badge" aria-label="Timp rămas">{{ remainingTimeLabel }}</span>
+        </div>
+        <div class="active-timer-actions">
+          @if (activeWorkoutLog.routine_id) {
+          <ion-button expand="block" fill="outline" [disabled]="isUpdatingActiveLog" (click)="openActiveRoutine()">
+            Deschide antrenamentul
+          </ion-button>
+          }
+          <ion-button expand="block" [disabled]="isUpdatingActiveLog" (click)="finalizeActiveWorkout()">
+            {{ isUpdatingActiveLog ? 'Se salvează…' : 'Finalizează acum' }}
+          </ion-button>
+          <ion-button
+            expand="block"
+            fill="clear"
+            color="danger"
+            [disabled]="isUpdatingActiveLog"
+            (click)="cancelActiveWorkout()"
+          >
+            Anulează
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+    } @else if (!isCheckingToday && !completedTodayLog) {
     <ion-card class="today-card">
       <ion-card-header>
         <ion-card-title>Ai tras azi de fiare?</ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <p>Un antrenament înregistrat astăzi îți păstrează calendarul și progresul la zi.</p>
-        <ion-button expand="block" (click)="startTodayWorkout()"> Da, azi am fost la sală </ion-button>
-        <ion-button fill="clear" expand="block" (click)="openProgress()">Nu, azi doar urmăresc progresul</ion-button>
+        <p>Alege opțiunea potrivită pentru a salva exact volumul lucrat astăzi.</p>
+        <div class="checkin-options">
+          <button type="button" class="checkin-option-btn primary" (click)="openCheckinModal('already_done')">
+            <strong>Am fost deja la sală</strong>
+            <span>Salvează imediat seriile care apar acum în interfață pentru antrenamentul ales.</span>
+          </button>
+          <button type="button" class="checkin-option-btn" (click)="openCheckinModal('started_now')">
+            <strong>Acum încep antrenamentul</strong>
+            <span>Pornește un timer de 3 ore și salvează seriile după ce termini antrenamentul.</span>
+          </button>
+        </div>
       </ion-card-content>
     </ion-card>
     }
@@ -118,4 +163,58 @@
     }
   </main>
 </ion-content>
+<ion-modal [isOpen]="isCheckinModalOpen" (didDismiss)="closeCheckinModal()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>{{ checkinModalTitle }}</ion-title>
+        <ion-buttons slot="end">
+          <ion-button fill="clear" [disabled]="isSubmittingCheckin" (click)="closeCheckinModal()">Închide</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="checkin-modal-content">
+      <div class="checkin-modal-body">
+        @if (checkinErrorMessage) {
+        <ion-note color="danger" class="notice" role="alert">{{ checkinErrorMessage }}</ion-note>
+        }
+        <p class="modal-intro">
+          @if (checkinMode === 'already_done') { Selectează antrenamentul pe care l-ai lucrat: } @else { Selectează
+          antrenamentul pe care urmează să-l lucrezi: }
+        </p>
+        @if (routines.length === 0) {
+        <div class="empty-routines-note">
+          Nu ai încă niciun antrenament salvat. Creează mai întâi un antrenament pe pagina principală.
+        </div>
+        } @else {
+        <div class="routine-choice-list">
+          @for (routine of routines; track routine.id) {
+          <button
+            type="button"
+            class="routine-choice-btn"
+            [class.selected]="selectedRoutineId === routine.id"
+            [attr.aria-pressed]="selectedRoutineId === routine.id"
+            (click)="selectRoutine(routine.id)"
+          >
+            <strong>{{ routine.name }}</strong>
+            @if (routine.notes) {
+            <span>{{ routine.notes }}</span>
+            }
+          </button>
+          }
+        </div>
+        <ion-button
+          expand="block"
+          class="confirm-checkin-btn"
+          [disabled]="!selectedRoutineId || isSubmittingCheckin"
+          (click)="confirmCheckin()"
+        >
+          @if (isSubmittingCheckin) { Se salvează… } @else if (checkinMode === 'already_done') { Salvează antrenamentul
+          } @else { Pornește timerul de 3 ore }
+        </ion-button>
+        }
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>
 <app-tabs></app-tabs>

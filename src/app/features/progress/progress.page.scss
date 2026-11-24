@@ -136,6 +136,92 @@
   margin-bottom: 16px;
 }
 
+.success-notice {
+  margin-top: 16px;
+}
+
+.missed-workout-card {
+  margin: 16px 0 0;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-card);
+  background: var(--app-surface);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.14);
+}
+
+.missed-workout-card ion-card-title {
+  font-size: 1.05rem;
+}
+
+.missed-workout-card p {
+  margin-top: 0;
+  color: var(--app-muted);
+}
+
+.missed-modal-content {
+  --background: var(--app-bg);
+}
+
+.missed-modal-body {
+  padding: 20px 16px 32px;
+}
+
+.modal-intro {
+  margin: 0 0 16px;
+  color: var(--app-muted);
+  line-height: 1.45;
+}
+
+.form-field {
+  --background: var(--app-surface-secondary);
+  --border-color: var(--app-border);
+  --border-radius: var(--app-radius-control);
+  margin-bottom: 16px;
+}
+
+.routine-choice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.routine-choice-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-control);
+  background: var(--app-surface-secondary);
+  color: var(--ion-text-color);
+  text-align: left;
+  cursor: pointer;
+}
+
+.routine-choice-btn.selected {
+  border-color: var(--ion-color-primary);
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.routine-choice-btn span {
+  color: var(--app-muted);
+  font-size: 0.86rem;
+}
+
+.confirm-missed-btn {
+  margin-top: 20px;
+}
+
+.empty-routines-note {
+  padding: 24px 16px;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-card);
+  background: var(--app-surface);
+  color: var(--app-muted);
+  text-align: center;
+}
+
 .state-message {
   padding: 48px 20px;
   color: var(--app-muted);
